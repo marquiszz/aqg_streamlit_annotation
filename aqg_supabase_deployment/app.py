@@ -28,7 +28,7 @@ st.markdown("""
 <style>
 /* Increase font size of all four annotation content boxes */
 div[data-testid="stTextArea"] textarea {
-    font-size: 15px !important;
+    font-size: 20px !important;
     line-height: 1.7 !important;
     color: white !important;
     -webkit-text-fill-color: white !important;
