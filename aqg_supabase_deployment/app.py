@@ -22,27 +22,25 @@ CRITERIA = {
 
 st.set_page_config(page_title="AQG Human Annotation", page_icon="📝", layout="wide")
 
-
 st.markdown("""
 <style>
-/* Increase annotation content font size */
-.annotation-content {
+/* Increase font size of all four annotation content boxes */
+div[data-testid="stTextArea"] textarea {
     font-size: 20px !important;
     line-height: 1.7 !important;
     color: white !important;
+    -webkit-text-fill-color: white !important;
+    opacity: 1 !important;
 }
 
-/* Ensure nested text also uses white and larger font */
-.annotation-content p,
-.annotation-content div,
-.annotation-content span {
-    font-size: 20px !important;
+/* Preserve white text in disabled/read-only text areas */
+div[data-testid="stTextArea"] textarea:disabled {
     color: white !important;
-    line-height: 1.7 !important;
+    -webkit-text-fill-color: white !important;
+    opacity: 1 !important;
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 
 # ============================================================
