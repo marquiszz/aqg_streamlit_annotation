@@ -22,25 +22,46 @@ CRITERIA = {
 
 st.set_page_config(page_title="AQG Human Annotation", page_icon="📝", layout="wide")
 
+
 st.markdown("""
 <style>
-/* Increase font size of all four annotation content boxes */
-div[data-testid="stTextArea"] textarea {
+/* Reduce empty space above the application title */
+.block-container {
+    padding-top: 0.8rem !important;
+    padding-bottom: 1rem !important;
+}
+
+/* Reduce title spacing */
+h1 {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.4rem !important;
+}
+
+/* Annotation content font */
+.annotation-content {
     font-size: 20px !important;
     line-height: 1.7 !important;
     color: white !important;
-    -webkit-text-fill-color: white !important;
-    opacity: 1 !important;
 }
 
-/* Preserve white text in disabled/read-only text areas */
-div[data-testid="stTextArea"] textarea:disabled {
+.annotation-content p,
+.annotation-content div,
+.annotation-content span {
+    font-size: 20px !important;
     color: white !important;
-    -webkit-text-fill-color: white !important;
-    opacity: 1 !important;
+    line-height: 1.7 !important;
+}
+
+/* Make text inside text areas larger */
+.stTextArea textarea {
+    font-size: 20px !important;
+    line-height: 1.6 !important;
+    color: white !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # ============================================================
@@ -360,21 +381,42 @@ col_c.metric("Stratum", str(current["Stratum"]))
 st.progress((current_index + 1) / total)
 
 # Main sample content — single-column layout
+
 st.subheader("Target Answer")
-st.text_area("Answer from NLQuAD", value=str(current["Answer"]), height=130,
-             disabled=True, key=f"answer_{Sample_ID}")
+st.text_area(
+    "Answer from NLQuAD",
+    value=str(current["Answer"]),
+    height=180,
+    disabled=True,
+    key=f"answer_{Sample_ID}"
+)
 
 st.subheader("Reference Question")
-st.text_area("Original question", value=str(current["Reference"]), height=130,
-             disabled=True, key=f"reference_{Sample_ID}")
+st.text_area(
+    "Original question",
+    value=str(current["Reference"]),
+    height=150,
+    disabled=True,
+    key=f"reference_{Sample_ID}"
+)
 
 st.subheader("Generated Question")
-st.text_area("T5 prediction", value=str(current["Prediction"]), height=130,
-             disabled=True, key=f"prediction_{Sample_ID}")
+st.text_area(
+    "T5 prediction",
+    value=str(current["Prediction"]),
+    height=150,
+    disabled=True,
+    key=f"prediction_{Sample_ID}"
+)
 
 st.subheader("Context")
-st.text_area("Original passage", value=str(current["Context"]), height=300,
-             disabled=True, key=f"context_{Sample_ID}")
+st.text_area(
+    "Original passage",
+    value=str(current["Context"]),
+    height=500,
+    disabled=True,
+    key=f"context_{Sample_ID}"
+)
 
 st.divider()
 st.header("Human Annotation")
