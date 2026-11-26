@@ -82,7 +82,7 @@ def fetch_annotator_annotations(annotator_id):
         .table("annotations")
         .select("*")
         .eq("annotator_id", annotator_id)
-        .order("sample_id")
+        .order("Sample_ID")
         .execute()
     )
     return pd.DataFrame(response.data or [])
@@ -94,16 +94,16 @@ def fetch_all_annotations():
         .table("annotations")
         .select("*")
         .order("annotator_id")
-        .order("sample_id")
+        .order("Sample_ID")
         .execute()
     )
     return pd.DataFrame(response.data or [])
 
 
-def save_annotation(annotator_id, sample_id, values):
+def save_annotation(annotator_id, Sample_ID, values):
     row = {
         "annotator_id": annotator_id,
-        "sample_id": int(sample_id),
+        "Sample_ID": int(Sample_ID),
         "relevance": values["Relevance"],
         "answerability": values["Answerability"],
         "fluency": values["Fluency"],
@@ -113,7 +113,7 @@ def save_annotation(annotator_id, sample_id, values):
     (
         get_supabase()
         .table("annotations")
-        .upsert(row, on_conflict="annotator_id,sample_id")
+        .upsert(row, on_conflict="annotator_id,Sample_ID")
         .execute()
     )
 
@@ -276,13 +276,13 @@ except Exception as exc:
     st.stop()
 
 total = len(samples)
-sample_ids = samples["Sample_ID"].astype(int).tolist()
+Sample_IDs = samples["Sample_ID"].astype(int).tolist()
 
 # Map this annotator's own saved annotations by sample ID.
 saved_by_id = {}
 if not annotation_df.empty:
     for row in annotation_df.to_dict("records"):
-        saved_by_id[int(row["sample_id"])] = row
+        saved_by_id[int(row["Sample_ID"])] = row
 
 completed_ids = {
     sid for sid, row in saved_by_id.items() if is_complete_row(row)
@@ -291,34 +291,34 @@ completed = len(completed_ids)
 
 if "sample_index" not in st.session_state:
     first_incomplete = next(
-        (i for i, sid in enumerate(sample_ids) if sid not in completed_ids),
+        (i for i, sid in enumerate(Sample_IDs) if sid not in completed_ids),
         max(total - 1, 0),
     )
     st.session_state.sample_index = first_incomplete
-    st.session_state.sample_selector = sample_ids[first_incomplete]
+    st.session_state.sample_selector = Sample_IDs[first_incomplete]
 
 
 def select_sample_changed():
     selected = int(st.session_state.sample_selector)
-    st.session_state.sample_index = sample_ids.index(selected)
+    st.session_state.sample_index = Sample_IDs.index(selected)
 
 
 def go_previous():
     new_index = max(0, int(st.session_state.sample_index) - 1)
     st.session_state.sample_index = new_index
-    st.session_state.sample_selector = sample_ids[new_index]
+    st.session_state.sample_selector = Sample_IDs[new_index]
 
 
 def go_next():
     new_index = min(total - 1, int(st.session_state.sample_index) + 1)
     st.session_state.sample_index = new_index
-    st.session_state.sample_selector = sample_ids[new_index]
+    st.session_state.sample_selector = Sample_IDs[new_index]
 
 
 current_index = min(max(int(st.session_state.sample_index), 0), total - 1)
 current = samples.iloc[current_index]
-sample_id = int(current["Sample_ID"])
-saved = row_to_annotation(saved_by_id.get(sample_id))
+Sample_ID = int(current["Sample_ID"])
+saved = row_to_annotation(saved_by_id.get(Sample_ID))
 
 # Sidebar progress and navigation
 with st.sidebar:
@@ -332,7 +332,7 @@ with st.sidebar:
     st.subheader("Navigate to sample")
     st.selectbox(
         "Sample ID",
-        options=sample_ids,
+        options=Sample_IDs,
         index=current_index,
         key="sample_selector",
         on_change=select_sample_changed,
@@ -355,26 +355,26 @@ with st.sidebar:
 # Sample header
 col_a, col_b, col_c = st.columns(3)
 col_a.metric("Current sample", f"{current_index + 1} / {total}")
-col_b.metric("Sample ID", sample_id)
+col_b.metric("Sample ID", Sample_ID)
 col_c.metric("Stratum", str(current["Stratum"]))
 st.progress((current_index + 1) / total)
 
 # Main sample content — single-column layout
 st.subheader("Target Answer")
 st.text_area("Answer from NLQuAD", value=str(current["Answer"]), height=130,
-             disabled=True, key=f"answer_{sample_id}")
+             disabled=True, key=f"answer_{Sample_ID}")
 
 st.subheader("Reference Question")
 st.text_area("Original question", value=str(current["Reference"]), height=130,
-             disabled=True, key=f"reference_{sample_id}")
+             disabled=True, key=f"reference_{Sample_ID}")
 
 st.subheader("Generated Question")
 st.text_area("T5 prediction", value=str(current["Prediction"]), height=130,
-             disabled=True, key=f"prediction_{sample_id}")
+             disabled=True, key=f"prediction_{Sample_ID}")
 
 st.subheader("Context")
 st.text_area("Original passage", value=str(current["Context"]), height=300,
-             disabled=True, key=f"context_{sample_id}")
+             disabled=True, key=f"context_{Sample_ID}")
 
 st.divider()
 st.header("Human Annotation")
@@ -391,7 +391,7 @@ if saved:
         "Its previous judgments are pre-filled; save again to update them."
     )
 
-with st.form(key=f"annotation_form_{annotator_id}_{sample_id}"):
+with st.form(key=f"annotation_form_{annotator_id}_{Sample_ID}"):
     selections = {}
     for criterion, description in CRITERIA.items():
         st.markdown(f"**{criterion.replace('_', ' ')}**")
@@ -405,7 +405,7 @@ with st.form(key=f"annotation_form_{annotator_id}_{sample_id}"):
             options=options,
             index=options.index(default_value),
             horizontal=True,
-            key=f"{annotator_id}_{criterion}_{sample_id}",
+            key=f"{annotator_id}_{criterion}_{Sample_ID}",
             label_visibility="collapsed",
         )
         st.write("")
@@ -419,9 +419,9 @@ if submitted:
         st.warning("Please select True or False for all four criteria before saving.")
     else:
         try:
-            save_annotation(annotator_id, sample_id, selections)
+            save_annotation(annotator_id, Sample_ID, selections)
             st.success(
-                f"Annotation for Sample_ID {sample_id} saved for {annotator_id}."
+                f"Annotation for Sample_ID {Sample_ID} saved for {annotator_id}."
             )
             st.rerun()
         except Exception as exc:
@@ -450,7 +450,7 @@ if not annotation_df.empty:
     own_export = annotation_df.copy()
     own_export = own_export.rename(columns={
         "annotator_id": "Annotator_ID",
-        "sample_id": "Sample_ID",
+        "Sample_ID": "Sample_ID",
         "relevance": "Relevance",
         "answerability": "Answerability",
         "fluency": "Fluency",
@@ -492,7 +492,7 @@ if admin_password:
             if not all_df.empty:
                 all_export = all_df.rename(columns={
                     "annotator_id": "Annotator_ID",
-                    "sample_id": "Sample_ID",
+                    "Sample_ID": "Sample_ID",
                     "relevance": "Relevance",
                     "answerability": "Answerability",
                     "fluency": "Fluency",
