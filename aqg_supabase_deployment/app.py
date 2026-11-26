@@ -56,8 +56,7 @@ def get_annotators():
     try:
         names = list(st.secrets["annotators"])
     except Exception:
-        names = ["Annotator 1", "Annotator 2", "Annotator 3",
-                 "Annotator 4", "Annotator 5"]
+        names = ["Rio", "Ryan", "Jericho"]
     names = [str(x).strip() for x in names if str(x).strip()]
     if not names:
         raise ValueError("Configure at least one name in .streamlit/secrets.toml.")
