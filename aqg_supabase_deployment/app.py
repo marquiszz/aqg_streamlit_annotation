@@ -22,24 +22,27 @@ CRITERIA = {
 
 st.set_page_config(page_title="AQG Human Annotation", page_icon="📝", layout="wide")
 
-st.markdown(
-    """
-    <style>
-    html, body, [data-testid="stAppViewContainer"],
-    [data-testid="stAppViewContainer"] * { color: #FFFFFF !important; }
-    [data-testid="stTextArea"] textarea,
-    [data-testid="stTextInput"] input {
-        color: #FFFFFF !important;
-        -webkit-text-fill-color: #FFFFFF !important;
-        opacity: 1 !important;
-    }
-    [data-testid="stTextArea"] label,
-    [data-testid="stWidgetLabel"],
-    [data-testid="stCaptionContainer"] { color: #FFFFFF !important; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+
+st.markdown("""
+<style>
+/* Increase annotation content font size */
+.annotation-content {
+    font-size: 20px !important;
+    line-height: 1.7 !important;
+    color: white !important;
+}
+
+/* Ensure nested text also uses white and larger font */
+.annotation-content p,
+.annotation-content div,
+.annotation-content span {
+    font-size: 20px !important;
+    color: white !important;
+    line-height: 1.7 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 
 # ============================================================
