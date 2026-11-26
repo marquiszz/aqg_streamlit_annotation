@@ -23,44 +23,27 @@ CRITERIA = {
 st.set_page_config(page_title="AQG Human Annotation", page_icon="📝", layout="wide")
 
 
+
 st.markdown("""
 <style>
-/* Reduce empty space above the application title */
-.block-container {
-    padding-top: 0.8rem !important;
-    padding-bottom: 1rem !important;
-}
-
-/* Reduce title spacing */
-h1 {
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0.4rem !important;
-}
-
-/* Annotation content font */
-.annotation-content {
-    font-size: 20px !important;
+/* Increase font size of all four annotation content boxes */
+div[data-testid="stTextArea"] textarea {
+    font-size: 15px !important;
     line-height: 1.7 !important;
     color: white !important;
+    -webkit-text-fill-color: white !important;
+    opacity: 1 !important;
 }
 
-.annotation-content p,
-.annotation-content div,
-.annotation-content span {
-    font-size: 20px !important;
+/* Preserve white text in disabled/read-only text areas */
+div[data-testid="stTextArea"] textarea:disabled {
     color: white !important;
-    line-height: 1.7 !important;
-}
-
-/* Make text inside text areas larger */
-.stTextArea textarea {
-    font-size: 20px !important;
-    line-height: 1.6 !important;
-    color: white !important;
+    -webkit-text-fill-color: white !important;
+    opacity: 1 !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 
