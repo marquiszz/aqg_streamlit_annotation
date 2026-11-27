@@ -43,7 +43,7 @@ div[data-testid="stTextArea"] textarea:disabled {
 
 /* Human annotation: larger labels and radio indicators, tighter spacing */
 .st-key-human_annotation div[data-testid="stMarkdownContainer"] p {
-    font-size: 17px !important;
+    font-size: 20px !important;
     line-height: 1.35 !important;
     margin-bottom: 0.15rem !important;
 }
@@ -61,12 +61,12 @@ div[data-testid="stTextArea"] textarea:disabled {
 }
 
 .st-key-human_annotation div[data-testid="stRadio"] label p {
-    font-size: 17px !important;
+    font-size: 20px !important;
     line-height: 1.2 !important;
 }
 
 .st-key-human_annotation div[data-testid="stRadio"] [role="radio"] {
-    transform: scale(1.25);
+    transform: scale(1.75);
     transform-origin: center;
 }
 
