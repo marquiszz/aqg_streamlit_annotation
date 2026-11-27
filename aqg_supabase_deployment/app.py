@@ -43,7 +43,7 @@ div[data-testid="stTextArea"] textarea:disabled {
 
 /* Human annotation: larger labels and radio indicators, tighter spacing */
 .st-key-human_annotation div[data-testid="stMarkdownContainer"] p {
-    font-size: 20px !important;
+    font-size: 17px !important;
     line-height: 1.35 !important;
     margin-bottom: 0.15rem !important;
 }
@@ -61,12 +61,12 @@ div[data-testid="stTextArea"] textarea:disabled {
 }
 
 .st-key-human_annotation div[data-testid="stRadio"] label p {
-    font-size: 20px !important;
+    font-size: 17px !important;
     line-height: 1.2 !important;
 }
 
 .st-key-human_annotation div[data-testid="stRadio"] [role="radio"] {
-    transform: scale(1.5);
+    transform: scale(1.25);
     transform-origin: center;
 }
 
@@ -340,6 +340,11 @@ st.caption(
     "Human evaluation interface for the 250 stratified T5 question-generation samples."
 )
 
+# Show save confirmation after the rerun triggered by a successful save.
+saved_notice = st.session_state.pop("saved_notice", None)
+if saved_notice:
+    st.success(saved_notice)
+
 with st.sidebar:
     st.header("Annotator")
     st.write(f"**{annotator_id}**")
@@ -398,6 +403,14 @@ def go_next():
     st.session_state.sample_index = new_index
     st.session_state.sample_selector = Sample_IDs[new_index]
 
+
+# Apply automatic navigation before the Sample ID selectbox is created.
+# Streamlit requires widget state to be updated before that widget is rendered.
+pending_sample_id = st.session_state.pop("pending_sample_id", None)
+if pending_sample_id is not None and int(pending_sample_id) in Sample_IDs:
+    next_index = Sample_IDs.index(int(pending_sample_id))
+    st.session_state.sample_index = next_index
+    st.session_state.sample_selector = int(pending_sample_id)
 
 current_index = min(max(int(st.session_state.sample_index), 0), total - 1)
 current = samples.iloc[current_index]
@@ -524,9 +537,21 @@ with st.container(key="human_annotation"):
         else:
             try:
                 save_annotation(annotator_id, Sample_ID, selections)
-                st.success(
-                    f"Annotation for Sample_ID {Sample_ID} saved for {annotator_id}."
-                )
+
+                # Queue the next sample for the next rerun. This avoids
+                # changing the Sample ID widget state after it has rendered.
+                if current_index < total - 1:
+                    st.session_state.pending_sample_id = Sample_IDs[current_index + 1]
+                    st.session_state.saved_notice = (
+                        f"Sample_ID {Sample_ID} saved successfully. "
+                        f"Moving to Sample_ID {Sample_IDs[current_index + 1]}."
+                    )
+                else:
+                    st.session_state.saved_notice = (
+                        f"Sample_ID {Sample_ID} saved successfully. "
+                        "You have reached the final sample."
+                    )
+
                 st.rerun()
             except Exception as exc:
                 st.error(f"Could not save annotation to Supabase: {exc}")
