@@ -26,7 +26,7 @@ st.set_page_config(page_title="AQG Human Annotation", page_icon="📝", layout="
 
 st.markdown("""
 <style>
-/* Increase font size of all four annotation content boxes */
+/* Readable text in the four read-only content boxes */
 div[data-testid="stTextArea"] textarea {
     font-size: 18px !important;
     line-height: 1.7 !important;
@@ -35,11 +35,51 @@ div[data-testid="stTextArea"] textarea {
     opacity: 1 !important;
 }
 
-/* Preserve white text in disabled/read-only text areas */
 div[data-testid="stTextArea"] textarea:disabled {
     color: white !important;
     -webkit-text-fill-color: white !important;
     opacity: 1 !important;
+}
+
+/* Human annotation: larger labels and radio indicators, tighter spacing */
+.st-key-human_annotation div[data-testid="stMarkdownContainer"] p {
+    font-size: 17px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 0.15rem !important;
+}
+
+.st-key-human_annotation div[data-testid="stCaptionContainer"] {
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.2rem !important;
+}
+
+.st-key-human_annotation div[data-testid="stRadio"] label {
+    padding: 0.1rem 0.35rem !important;
+    gap: 0.45rem !important;
+}
+
+.st-key-human_annotation div[data-testid="stRadio"] label p {
+    font-size: 17px !important;
+    line-height: 1.2 !important;
+}
+
+.st-key-human_annotation div[data-testid="stRadio"] [role="radio"] {
+    transform: scale(1.25);
+    transform-origin: center;
+}
+
+.st-key-human_annotation div[data-testid="stRadio"] div[role="radiogroup"] {
+    gap: 0.45rem !important;
+}
+
+.st-key-human_annotation div[data-testid="stRadio"] {
+    margin-bottom: 0.15rem !important;
+}
+
+.st-key-human_annotation div[data-testid="stForm"] {
+    padding-top: 0.25rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -440,56 +480,57 @@ st.text_area(
     key=f"context_{Sample_ID}"
 )
 
-st.divider()
-st.header("Human Annotation")
-st.caption(
-    "Evaluate the generated question using the four criteria below. "
-    "Select True or False for every criterion, then save."
-)
-
-saved_values = saved or {}
-options = ["Not annotated", "True", "False"]
-if saved:
-    st.info(
-        "This sample has a saved annotation for your selected annotator. "
-        "Its previous judgments are pre-filled; save again to update them."
+with st.container(key="human_annotation"):
+    st.divider()
+    st.header("Human Annotation")
+    st.caption(
+        "Evaluate the generated question using the four criteria below. "
+        "Select True or False for every criterion, then save."
     )
 
-with st.form(key=f"annotation_form_{annotator_id}_{Sample_ID}"):
-    selections = {}
-    for criterion, description in CRITERIA.items():
-        st.markdown(f"**{criterion.replace('_', ' ')}**")
-        st.caption(description)
-        previous_value = str(saved_values.get(criterion, ""))
-        default_value = (
-            previous_value if previous_value in ("True", "False") else "Not annotated"
+    saved_values = saved or {}
+    options = ["Not annotated", "True", "False"]
+    if saved:
+        st.info(
+            "This sample has a saved annotation for your selected annotator. "
+            "Its previous judgments are pre-filled; save again to update them."
         )
-        selections[criterion] = st.radio(
-            label=f"{criterion} judgment",
-            options=options,
-            index=options.index(default_value),
-            horizontal=True,
-            key=f"{annotator_id}_{criterion}_{Sample_ID}",
-            label_visibility="collapsed",
-        )
-        st.write("")
 
-    submitted = st.form_submit_button(
-        "💾 Save Annotation", type="primary", use_container_width=True
-    )
-
-if submitted:
-    if any(value == "Not annotated" for value in selections.values()):
-        st.warning("Please select True or False for all four criteria before saving.")
-    else:
-        try:
-            save_annotation(annotator_id, Sample_ID, selections)
-            st.success(
-                f"Annotation for Sample_ID {Sample_ID} saved for {annotator_id}."
+    with st.form(key=f"annotation_form_{annotator_id}_{Sample_ID}"):
+        selections = {}
+        for criterion, description in CRITERIA.items():
+            st.markdown(f"**{criterion.replace('_', ' ')}**")
+            st.caption(description)
+            previous_value = str(saved_values.get(criterion, ""))
+            default_value = (
+                previous_value if previous_value in ("True", "False") else "Not annotated"
             )
-            st.rerun()
-        except Exception as exc:
-            st.error(f"Could not save annotation to Supabase: {exc}")
+            selections[criterion] = st.radio(
+                label=f"{criterion} judgment",
+                options=options,
+                index=options.index(default_value),
+                horizontal=True,
+                key=f"{annotator_id}_{criterion}_{Sample_ID}",
+                label_visibility="collapsed",
+            )
+
+        submitted = st.form_submit_button(
+            "💾 Save Annotation", type="primary", use_container_width=True
+        )
+
+    if submitted:
+        if any(value == "Not annotated" for value in selections.values()):
+            st.warning("Please select True or False for all four criteria before saving.")
+        else:
+            try:
+                save_annotation(annotator_id, Sample_ID, selections)
+                st.success(
+                    f"Annotation for Sample_ID {Sample_ID} saved for {annotator_id}."
+                )
+                st.rerun()
+            except Exception as exc:
+                st.error(f"Could not save annotation to Supabase: {exc}")
+
 
 # Navigation controls
 st.divider()
