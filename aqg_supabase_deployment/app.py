@@ -234,13 +234,8 @@ def load_samples():
 
 
 # ============================================================
-# APP
+# APP — NAME-BASED ANNOTATOR ENTRY
 # ============================================================
-st.title("📝 AQG Human Annotation Viewer")
-st.caption(
-    "Human evaluation interface for the 250 stratified T5 question-generation samples."
-)
-
 try:
     annotators = get_annotators()
     supabase = get_supabase()
@@ -252,25 +247,70 @@ except Exception as exc:
     )
     st.stop()
 
-# Dropdown identity. This records the selected label; it is not authentication.
-if "annotator_id" not in st.session_state:
-    st.session_state.annotator_id = annotators[0]
+# Name selection is an identity label, not secure authentication.
+if not st.session_state.get("logged_in", False):
+    st.title("📝 AQG Human Annotation")
+    st.caption("Annotator entry")
+    st.markdown("### Welcome")
+    st.write("Select your name to open the annotation workspace.")
+
+    with st.form("annotator_login_form"):
+        login_annotator = st.selectbox(
+            "Annotator name",
+            options=annotators,
+            index=None,
+            placeholder="Choose your name...",
+            key="login_annotator",
+        )
+        login_submitted = st.form_submit_button(
+            "Continue to annotation",
+            type="primary",
+            use_container_width=True,
+        )
+
+    if login_submitted:
+        if not login_annotator:
+            st.warning("Please select your annotator name to continue.")
+        else:
+            st.session_state.annotator_id = login_annotator
+            st.session_state.logged_in = True
+            # Start from this annotator's first incomplete sample, not another
+            # annotator's previous browser-session position.
+            st.session_state.pop("sample_index", None)
+            st.session_state.pop("sample_selector", None)
+            st.rerun()
+
+    st.info(
+        "Your saved annotations are loaded separately according to the name "
+        "you select. Please make sure you choose your own name."
+    )
+    st.stop()
+
+annotator_id = st.session_state.get("annotator_id")
+if annotator_id not in annotators:
+    # Handle a removed/renamed annotator in Streamlit secrets safely.
+    st.session_state.pop("logged_in", None)
+    st.session_state.pop("annotator_id", None)
+    st.session_state.pop("sample_index", None)
+    st.session_state.pop("sample_selector", None)
+    st.rerun()
+
+st.title("📝 AQG Human Annotation Viewer")
+st.caption(
+    "Human evaluation interface for the 250 stratified T5 question-generation samples."
+)
 
 with st.sidebar:
     st.header("Annotator")
-    selected_annotator = st.selectbox(
-        "Select your annotator ID",
-        options=annotators,
-        index=annotators.index(st.session_state.annotator_id)
-        if st.session_state.annotator_id in annotators else 0,
-        key="annotator_selector",
-    )
-    if selected_annotator != st.session_state.annotator_id:
-        st.session_state.annotator_id = selected_annotator
+    st.write(f"**{annotator_id}**")
+    if st.button("Log out", use_container_width=True):
+        st.session_state.pop("logged_in", None)
+        st.session_state.pop("annotator_id", None)
         st.session_state.pop("sample_index", None)
+        st.session_state.pop("sample_selector", None)
+        st.session_state.pop("admin_export_ready", None)
+        st.session_state.pop("admin_export_df", None)
         st.rerun()
-
-annotator_id = st.session_state.annotator_id
 
 try:
     samples = load_samples()
@@ -335,10 +375,10 @@ with st.sidebar:
     st.divider()
     st.subheader("Navigate to sample")
     st.selectbox(
-    "Sample ID",
-    options=Sample_IDs,
-    key="sample_selector",
-    on_change=select_sample_changed,
+        "Sample ID",
+        options=Sample_IDs,
+        key="sample_selector",
+        on_change=select_sample_changed,
     )
 
     st.caption("Annotation status")
