@@ -335,11 +335,10 @@ with st.sidebar:
     st.divider()
     st.subheader("Navigate to sample")
     st.selectbox(
-        "Sample ID",
-        options=Sample_IDs,
-        index=current_index,
-        key="sample_selector",
-        on_change=select_sample_changed,
+    "Sample ID",
+    options=Sample_IDs,
+    key="sample_selector",
+    on_change=select_sample_changed,
     )
 
     st.caption("Annotation status")
